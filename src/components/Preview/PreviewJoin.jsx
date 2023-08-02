@@ -48,6 +48,7 @@ const PreviewJoin = ({
     defaultPreviewPreference
   );
   const [name, setName] = useState(initialName || previewPreference.name);
+  const [email, setEmail] = useState("");
   const { isLocalAudioEnabled, isLocalVideoEnabled } = useAVToggle();
   const [previewError, setPreviewError] = useState(false);
   const { enableJoin, preview, join } = usePreviewJoin({
@@ -119,7 +120,9 @@ const PreviewJoin = ({
         />
         <PreviewName
           name={name}
-          onChange={setName}
+          email={email}
+          onChangeName={setName}
+          onChangeEmail={setEmail}
           enableJoin={enableJoin}
           onJoin={savePreferenceAndJoin}
         />
