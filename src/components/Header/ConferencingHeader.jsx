@@ -1,6 +1,6 @@
 import React from "react";
-import { Flex, VerticalDivider } from "@100mslive/react-ui";
-import { Logo, SpeakerTag } from "./HeaderComponents";
+import { Flex } from "@100mslive/react-ui";
+import { LogoComponent, SpeakerTag } from "./HeaderComponents";
 import { ParticipantCount } from "./ParticipantList";
 import { StreamActions } from "./StreamActions";
 
@@ -12,8 +12,7 @@ export const ConferencingHeader = ({ isPreview }) => {
       css={{ position: "relative", height: "100%" }}
     >
       <Flex align="center" css={{ position: "absolute", left: "$10" }}>
-        <Logo />
-        <VerticalDivider css={{ ml: "$8" }} />
+        <LogoComponent />
         {!isPreview ? <SpeakerTag /> : null}
       </Flex>
 

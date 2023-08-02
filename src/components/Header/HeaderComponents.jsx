@@ -8,11 +8,11 @@ import { VolumeOneIcon } from "@100mslive/react-icons";
 import {
   config as cssConfig,
   Flex,
-  styled,
   Text,
   textEllipsis,
   useTheme,
 } from "@100mslive/react-ui";
+import { Logo } from "../Logo";
 import { useLogo } from "../AppData/useUISettings";
 import { isStreamingKit } from "../../common/utils";
 
@@ -38,16 +38,16 @@ export const SpeakerTag = () => {
   );
 };
 
-const LogoImg = styled("img", {
-  maxHeight: "$14",
-  p: "$2",
-  w: "auto",
-  "@md": {
-    maxHeight: "$12",
-  },
-});
+// const LogoImg = styled("img", {
+//   maxHeight: "$14",
+//   p: "$2",
+//   w: "auto",
+//   "@md": {
+//     maxHeight: "$12",
+//   },
+// });
 
-export const Logo = () => {
+export const LogoComponent = () => {
   const { themeType } = useTheme();
   const logo = useLogo();
   const isMobile = useMedia(cssConfig.media.md);
@@ -56,17 +56,6 @@ export const Logo = () => {
   if (isConnected && isMobile && isStreamingKit()) {
     return null;
   }
-  return (
-    <LogoImg
-      src={
-        logo ||
-        (themeType === "dark"
-          ? require("../../images/logo-light.svg")
-          : require("../../images/logo-dark.svg"))
-      }
-      alt="Brand Logo"
-      width={132}
-      height={40}
-    />
-  );
+
+  return <Logo fontColor="#000" />;
 };

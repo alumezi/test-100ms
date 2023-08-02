@@ -4,7 +4,7 @@ import { config as cssConfig, Flex } from "@100mslive/react-ui";
 import { EmojiReaction } from "../EmojiReaction";
 import { LeaveRoom } from "../LeaveRoom";
 import MetaActions from "../MetaActions";
-import { Logo, SpeakerTag } from "./HeaderComponents";
+import { LogoComponent, SpeakerTag } from "./HeaderComponents";
 import { ParticipantCount } from "./ParticipantList";
 import { LiveStatus, RecordingStatus, StreamActions } from "./StreamActions";
 
@@ -23,7 +23,7 @@ export const StreamingHeader = ({ isPreview }) => {
           left: "$10",
         }}
       >
-        <Logo />
+        <LogoComponent />
         {isMobile && (
           <Flex align="center" gap={2}>
             <LeaveRoom />

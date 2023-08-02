@@ -58,3 +58,11 @@ pre {
 #hls-viewer-light:fullscreen {
   background-color: white !important;
 }
+
+@font-face {
+  font-family: Monoline;
+  font-weight: normal;
+  font-style: normal;
+  src: url("/asset/monoline-regular.otf") format("opentype");
+  font-display: fallback;
+}
