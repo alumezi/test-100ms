@@ -1,5 +1,4 @@
 import { Fragment, useState } from "react";
-import { useParams } from "react-router-dom";
 import {
   selectIsConnectedToRoom,
   selectPermissions,
@@ -29,13 +28,11 @@ import {
   DialogContent,
   DialogRow,
 } from "../primitives/DialogContent";
+import { useAppContext } from "../state";
 import { useDropdownList } from "./hooks/useDropdownList";
-import { useNavigation } from "./hooks/useNavigation";
 import { isStreamingKit } from "../common/utils";
 
 export const LeaveRoom = () => {
-  const navigate = useNavigation();
-  const params = useParams();
   const [open, setOpen] = useState(false);
   const [showEndRoomModal, setShowEndRoomModal] = useState(false);
   const [lockRoom, setLockRoom] = useState(false);
@@ -44,12 +41,10 @@ export const LeaveRoom = () => {
   const hmsActions = useHMSActions();
   useDropdownList({ open, name: "LeaveRoom" });
 
+  const { leaveMeeting } = useAppContext();
+
   const redirectToLeavePage = () => {
-    if (params.role) {
-      navigate("/leave/" + params.roomId + "/" + params.role);
-    } else {
-      navigate("/leave/" + params.roomId);
-    }
+    leaveMeeting();
     ToastManager.clearAllToast();
   };
 

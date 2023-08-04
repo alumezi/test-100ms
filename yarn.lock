@@ -2896,11 +2896,6 @@
   dependencies:
     "@babel/runtime" "^7.13.10"
 
-"@remix-run/router@1.0.2":
-  version "1.0.2"
-  resolved "https://registry.npmjs.org/@remix-run/router/-/router-1.0.2.tgz"
-  integrity sha512-GRSOFhJzjGN+d4sKHTMSvNeUPoZiDHWmRnXfzaxrqe7dE/Nzlc8BiMSJdLDESZlndM7jIUrZ/F4yWqVYlI0rwQ==
-
 "@rrweb/types@^2.0.0-alpha.7":
   version "2.0.0-alpha.8"
   resolved "https://registry.yarnpkg.com/@rrweb/types/-/types-2.0.0-alpha.8.tgz#29a6550dd833364a459af4be4ce3b233003fb78b"
@@ -7350,21 +7345,6 @@ react-resize-detector@^7.0.0:
   integrity sha512-zXnPJ2m8+6oq9Nn8zsep/orts9vQv3elrpA+R8XTcW7DVVUJ9vwDwMXaBtykAYjMnkCIaOoK9vObyR7ZgFNlOw==
   dependencies:
     lodash "^4.17.21"
-
-react-router-dom@^6.3.0:
-  version "6.4.2"
-  resolved "https://registry.npmjs.org/react-router-dom/-/react-router-dom-6.4.2.tgz"
-  integrity sha512-yM1kjoTkpfjgczPrcyWrp+OuQMyB1WleICiiGfstnQYo/S8hPEEnVjr/RdmlH6yKK4Tnj1UGXFSa7uwAtmDoLQ==
-  dependencies:
-    "@remix-run/router" "1.0.2"
-    react-router "6.4.2"
-
-react-router@6.4.2:
-  version "6.4.2"
-  resolved "https://registry.npmjs.org/react-router/-/react-router-6.4.2.tgz"
-  integrity sha512-Rb0BAX9KHhVzT1OKhMvCDMw776aTYM0DtkxqUBP8dNBom3mPXlfNs76JNGK8wKJ1IZEY1+WGj+cvZxHVk/GiKw==
-  dependencies:
-    "@remix-run/router" "1.0.2"
 
 react-style-singleton@^2.2.1:
   version "2.2.1"

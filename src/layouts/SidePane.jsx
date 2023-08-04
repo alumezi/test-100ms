@@ -22,7 +22,6 @@ const SidePane = ({ css = {} }) => {
   return (
     <Box
       css={{
-        position: "absolute",
         w: "$100",
         h: "100%",
         p: "$10",

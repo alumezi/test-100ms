@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 import { useSearchParam } from "react-use";
 import { v4 as uuid } from "uuid";
 import { useHMSActions } from "@100mslive/react-sdk";
@@ -7,9 +6,9 @@ import { Box, Flex, Loading, styled } from "@100mslive/react-ui";
 import PreviewContainer from "./Preview/PreviewContainer";
 import SidePane from "../layouts/SidePane";
 import { ErrorDialog } from "../primitives/DialogContent";
+import { useAppContext } from "../state";
 import { Header } from "./Header";
 import { useSetUiSettings, useTokenEndpoint } from "./AppData/useUISettings";
-import { useNavigation } from "./hooks/useNavigation";
 import getToken from "../services/tokenService";
 import {
   QUERY_PARAM_AUTH_TOKEN,
@@ -32,11 +31,9 @@ import {
 
 const env = process.env.REACT_APP_ENV;
 const PreviewScreen = React.memo(({ authTokenByRoomCodeEndpoint }) => {
-  const navigate = useNavigation();
   const hmsActions = useHMSActions();
   const tokenEndpoint = useTokenEndpoint();
   const [, setIsHeadless] = useSetUiSettings(UI_SETTINGS.isHeadless);
-  const { roomId: urlRoomId, role: userRole } = useParams(); // from the url
   const [token, setToken] = useState(null);
   const [error, setError] = useState({ title: "", body: "" });
   // way to skip preview for automated tests, beam recording and streaming
@@ -53,15 +50,18 @@ const PreviewScreen = React.memo(({ authTokenByRoomCodeEndpoint }) => {
     useSearchParam(QUERY_PARAM_NAME) || (skipPreview ? "Beam" : "");
   const previewAsRole = useSearchParam(QUERY_PARAM_PREVIEW_AS_ROLE);
   let authToken = useSearchParam(QUERY_PARAM_AUTH_TOKEN);
+
+  const { goToMeeting, role, roomId } = useAppContext();
+
   useEffect(() => {
     if (authToken) {
       setToken(authToken);
       return;
     }
-    if (!tokenEndpoint || !urlRoomId) {
+    if (!tokenEndpoint || !roomId) {
       return;
     }
-    const roomCode = !userRole && urlRoomId;
+    const roomCode = !role && roomId;
 
     const getTokenFn = roomCode
       ? () =>
@@ -69,7 +69,7 @@ const PreviewScreen = React.memo(({ authTokenByRoomCodeEndpoint }) => {
             { roomCode },
             { endpoint: authTokenByRoomCodeEndpoint }
           )
-      : () => getToken(tokenEndpoint, uuid(), userRole, urlRoomId);
+      : () => getToken(tokenEndpoint, uuid(), role, roomId);
 
     getTokenFn()
       .then(token => {
@@ -81,19 +81,15 @@ const PreviewScreen = React.memo(({ authTokenByRoomCodeEndpoint }) => {
   }, [
     hmsActions,
     tokenEndpoint,
-    urlRoomId,
-    userRole,
+    roomId,
+    role,
     authToken,
     authTokenByRoomCodeEndpoint,
   ]);
 
   const onJoin = () => {
     !directJoinHeadful && setIsHeadless(skipPreview);
-    let meetingURL = `/meeting/${urlRoomId}`;
-    if (userRole) {
-      meetingURL += `/${userRole}`;
-    }
-    navigate(meetingURL);
+    goToMeeting();
   };
 
   if (error.title) {

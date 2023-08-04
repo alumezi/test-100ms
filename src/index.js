@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { init } from "zipyai";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
+import { AppContextProvider } from "./state";
 
 if (process.env.REACT_APP_ZIPY_KEY) {
   init(process.env.REACT_APP_ZIPY_KEY);
@@ -11,7 +12,9 @@ if (process.env.REACT_APP_ZIPY_KEY) {
 const root = createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <App />
+    <AppContextProvider initialRoomId="" initialRole="hls-viewer">
+      <App />
+    </AppContextProvider>
   </React.StrictMode>
 );
 

@@ -6,6 +6,7 @@ import {
   useHMSNotifications,
 } from "@100mslive/react-sdk";
 import { Button } from "@100mslive/react-ui";
+import { useAppContext } from "../../state";
 import { ToastBatcher } from "../Toast/ToastBatcher";
 import { ToastManager } from "../Toast/ToastManager";
 import { AutoplayBlockedModal } from "./AutoplayBlockedModal";
@@ -22,12 +23,11 @@ import {
   useIsHeadless,
   useSubscribedNotifications,
 } from "../AppData/useUISettings";
-import { useNavigation } from "../hooks/useNavigation";
 import { getMetadata } from "../../common/utils";
 
 export function Notifications() {
   const notification = useHMSNotifications();
-  const navigate = useNavigation();
+  const { leaveMeeting } = useAppContext();
   const HLS_VIEWER_ROLE = useHLSViewerRole();
   const subscribedNotifications = useSubscribedNotifications() || {};
   const isHeadless = useIsHeadless();
@@ -90,12 +90,8 @@ export function Notifications() {
           // goto leave for terminal if any action is not performed within 2secs
           // if network is still unavailable going to preview will throw an error
           setTimeout(() => {
-            const previewLocation = window.location.pathname.replace(
-              "meeting",
-              "leave"
-            );
             ToastManager.clearAllToast();
-            navigate(previewLocation);
+            leaveMeeting();
           }, 2000);
           return;
         }
@@ -144,11 +140,7 @@ export function Notifications() {
               }`,
         });
         setTimeout(() => {
-          const leaveLocation = window.location.pathname.replace(
-            "meeting",
-            "leave"
-          );
-          navigate(leaveLocation);
+          leaveMeeting();
           ToastManager.clearAllToast();
         }, 2000);
         break;

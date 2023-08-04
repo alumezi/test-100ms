@@ -1,17 +1,5 @@
-import React, { Suspense, useEffect } from "react";
-import {
-  BrowserRouter as Router,
-  Navigate,
-  Route,
-  Routes,
-  useParams,
-} from "react-router-dom";
-import {
-  HMSRoomProvider,
-  selectIsConnectedToRoom,
-  useHMSActions,
-  useHMSStore,
-} from "@100mslive/react-sdk";
+import React, { Suspense, useEffect, useState } from "react";
+import { HMSRoomProvider } from "@100mslive/react-sdk";
 import { Box, HMSThemeProvider } from "@100mslive/react-ui";
 import { AppData } from "./components/AppData/AppData.jsx";
 import { BeamSpeakerLabelsLogging } from "./components/AudioLevel/BeamSpeakerLabelsLogging";
@@ -27,7 +15,7 @@ import { hmsActions, hmsNotifications, hmsStats, hmsStore } from "./hms.js";
 import { Confetti } from "./plugins/confetti";
 import { FlyingEmoji } from "./plugins/FlyingEmoji.jsx";
 import { RemoteStopScreenshare } from "./plugins/RemoteStopScreenshare";
-import { getRoutePrefix, shadeColor } from "./common/utils";
+import { shadeColor } from "./common/utils";
 import { FeatureFlags } from "./services/FeatureFlags";
 import "./base.css";
 import "./index.css";
@@ -48,7 +36,6 @@ if (window.location.host.includes("localhost")) {
 document.title =
   process.env.REACT_APP_TITLE || `${appName}'s ${document.title}`;
 
-// TODO: remove now that there are options to change to portrait
 const getAspectRatio = ({ width, height }) => {
   const host = process.env.REACT_APP_HOST_NAME || window.location.hostname;
   const portraitDomains = (
@@ -60,8 +47,9 @@ const getAspectRatio = ({ width, height }) => {
   return { width, height };
 };
 
-export function EdtechComponent({
-  tokenEndpoint = defaultTokenEndpoint,
+function EdtechComponent({
+  initialRoomId,
+  initialRole,
   themeConfig: {
     aspectRatio = "1-1",
     font = "Roboto",
@@ -76,9 +64,25 @@ export function EdtechComponent({
   getDetails = () => {},
   authTokenByRoomCodeEndpoint = "",
 }) {
+  const [view, setView] = useState("preview");
+  const [roomId] = useState(initialRoomId);
+  const [role] = useState(initialRole);
+
   const { 0: width, 1: height } = aspectRatio
     .split("-")
     .map(el => parseInt(el));
+
+  const goToMeeting = () => {
+    setView("meeting");
+  };
+
+  const goToStreaming = () => {
+    setView("streaming");
+  };
+
+  useEffect(() => {
+    getDetails();
+  }, [roomId]); //eslint-disable-line
 
   return (
     <ErrorBoundary>
@@ -109,9 +113,8 @@ export function EdtechComponent({
             policyConfig={policyConfig}
             recordingUrl={recordingUrl}
             logo={logo}
-            tokenEndpoint={tokenEndpoint}
+            tokenEndpoint={defaultTokenEndpoint || authTokenByRoomCodeEndpoint}
           />
-
           <Init />
           <Box
             css={{
@@ -122,10 +125,37 @@ export function EdtechComponent({
                 : { h: "100%" }),
             }}
           >
-            <AppRoutes
-              getDetails={getDetails}
-              authTokenByRoomCodeEndpoint={authTokenByRoomCodeEndpoint}
-            />
+            <ToastContainer />
+            <Notifications />
+            <Confetti />
+            <FlyingEmoji />
+            <RemoteStopScreenshare />
+            <KeyboardHandler />
+            <BeamSpeakerLabelsLogging />
+
+            {view === "preview" && (
+              <Suspense fallback={<FullPageProgress />}>
+                <PreviewScreen
+                  roomId={roomId}
+                  role={role}
+                  onGoToMeeting={goToMeeting}
+                  authTokenByRoomCodeEndpoint={authTokenByRoomCodeEndpoint}
+                />
+              </Suspense>
+            )}
+
+            {view === "meeting" && (
+              <Suspense fallback={<FullPageProgress />}>
+                <Conference
+                  roomId={roomId}
+                  role={role}
+                  onGoToStreaming={goToStreaming}
+                />
+              </Suspense>
+            )}
+
+            {view === "leave" && <PostLeave />}
+            <ErrorPage error="Invalid URL!" />
           </Box>
         </HMSRoomProvider>
       </HMSThemeProvider>
@@ -133,144 +163,11 @@ export function EdtechComponent({
   );
 }
 
-const RedirectToPreview = ({ getDetails }) => {
-  const { roomId, role } = useParams();
-  useEffect(() => {
-    getDetails();
-  }, [roomId]); //eslint-disable-line
-
-  console.error({ roomId, role });
-
-  if (!roomId && !role) {
-    return <Navigate to="/" />;
-  }
-  if (!roomId) {
-    return <Navigate to="/" />;
-  }
-  if (["streaming", "preview", "meeting", "leave"].includes(roomId) && !role) {
-    return <Navigate to="/" />;
-  }
-
-  return (
-    <Navigate to={`${getRoutePrefix()}/preview/${roomId}/${role || ""}`} />
-  );
-};
-
-const RouteList = ({ getDetails, authTokenByRoomCodeEndpoint }) => {
-  return (
-    <Routes>
-      <Route path="preview">
-        <Route
-          path=":roomId/:role"
-          element={
-            <Suspense fallback={<FullPageProgress />}>
-              <PreviewScreen
-                authTokenByRoomCodeEndpoint={authTokenByRoomCodeEndpoint}
-              />
-            </Suspense>
-          }
-        />
-        <Route
-          path=":roomId"
-          element={
-            <Suspense fallback={<FullPageProgress />}>
-              <PreviewScreen
-                authTokenByRoomCodeEndpoint={authTokenByRoomCodeEndpoint}
-              />
-            </Suspense>
-          }
-        />
-      </Route>
-      <Route path="meeting">
-        <Route
-          path=":roomId/:role"
-          element={
-            <Suspense fallback={<FullPageProgress />}>
-              <Conference />
-            </Suspense>
-          }
-        />
-        <Route
-          path=":roomId"
-          element={
-            <Suspense fallback={<FullPageProgress />}>
-              <Conference />
-            </Suspense>
-          }
-        />
-      </Route>
-      <Route path="leave">
-        <Route path=":roomId/:role" element={<PostLeave />} />
-        <Route path=":roomId" element={<PostLeave />} />
-      </Route>
-      <Route
-        path="/:roomId/:role"
-        element={<RedirectToPreview getDetails={getDetails} />}
-      />
-      <Route
-        path="/:roomId/"
-        element={<RedirectToPreview getDetails={getDetails} />}
-      />
-      <Route path="*" element={<ErrorPage error="Invalid URL!" />} />
-    </Routes>
-  );
-};
-
-const BackSwipe = () => {
-  const isConnectedToRoom = useHMSStore(selectIsConnectedToRoom);
-  const hmsActions = useHMSActions();
-  useEffect(() => {
-    const onRouteLeave = async () => {
-      if (isConnectedToRoom) {
-        await hmsActions.leave();
-      }
-    };
-    window.addEventListener("popstate", onRouteLeave);
-    return () => {
-      window.removeEventListener("popstate", onRouteLeave);
-    };
-  }, [hmsActions, isConnectedToRoom]);
-  return null;
-};
-
-function AppRoutes({ getDetails, authTokenByRoomCodeEndpoint }) {
-  return (
-    <Router>
-      <ToastContainer />
-      <Notifications />
-      <BackSwipe />
-      <Confetti />
-      <FlyingEmoji />
-      <RemoteStopScreenshare />
-      <KeyboardHandler />
-      <BeamSpeakerLabelsLogging />
-      <Routes>
-        <Route
-          path="/*"
-          element={
-            <RouteList
-              getDetails={getDetails}
-              authTokenByRoomCodeEndpoint={authTokenByRoomCodeEndpoint}
-            />
-          }
-        />
-        <Route
-          path="/streaming/*"
-          element={
-            <RouteList
-              getDetails={getDetails}
-              authTokenByRoomCodeEndpoint={authTokenByRoomCodeEndpoint}
-            />
-          }
-        />
-      </Routes>
-    </Router>
-  );
-}
-
-export default function App() {
+export default function App({ initialRoomId, initialRole }) {
   return (
     <EdtechComponent
+      initialRoomId={initialRoomId}
+      initialRole={initialRole}
       themeConfig={{
         aspectRatio: process.env.REACT_APP_TILE_SHAPE,
         theme: process.env.REACT_APP_THEME,

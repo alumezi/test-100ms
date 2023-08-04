@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
 import { usePrevious } from "react-use";
 import {
   HMSRoomState,
@@ -11,12 +10,12 @@ import {
 } from "@100mslive/react-sdk";
 import { Box, Flex } from "@100mslive/react-ui";
 import { ConferenceMainView } from "../layouts/mainView";
+import { useAppContext } from "../state";
 import { Footer } from "./Footer";
 import FullPageProgress from "./FullPageProgress";
 import { Header } from "./Header";
 import { RoleChangeRequestModal } from "./RoleChangeRequestModal";
 import { useIsHeadless } from "./AppData/useUISettings";
-import { useNavigation } from "./hooks/useNavigation";
 import {
   APP_DATA,
   EMOJI_REACTION_TYPE,
@@ -26,8 +25,6 @@ import {
 } from "../common/constants";
 
 const Conference = () => {
-  const navigate = useNavigation();
-  const { roomId, role } = useParams();
   const isHeadless = useIsHeadless();
   const roomState = useHMSStore(selectRoomState);
   const prevState = usePrevious(roomState);
@@ -39,6 +36,8 @@ const Conference = () => {
   const footerRef = useRef();
   const dropdownListRef = useRef();
   const performAutoHide = hideControls && (isAndroid || isIOS || isIPadOS);
+
+  const { roomId, role, goToRoot, goToPreview } = useAppContext();
 
   const toggleControls = e => {
     if (dropdownListRef.current?.length === 0) {
@@ -64,7 +63,7 @@ const Conference = () => {
 
   useEffect(() => {
     if (!roomId) {
-      navigate(`/`);
+      goToRoot();
       return;
     }
     if (
@@ -75,10 +74,17 @@ const Conference = () => {
         isConnectedToRoom
       )
     ) {
-      if (role) navigate(`/preview/${roomId || ""}/${role}`);
-      else navigate(`/preview/${roomId || ""}`);
+      goToPreview();
     }
-  }, [isConnectedToRoom, prevState, roomState, navigate, role, roomId]);
+  }, [
+    isConnectedToRoom,
+    prevState,
+    roomState,
+    role,
+    roomId,
+    goToPreview,
+    goToRoot,
+  ]);
 
   useEffect(() => {
     // beam doesn't need to store messages, saves on unnecessary store updates in large calls
